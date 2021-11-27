@@ -73,6 +73,7 @@ unsigned char* pixels;
 const double STEP = 0.1; // You should experiment to find the optimal step size.
 const int STEP_MAX = 1000; // Upper limit of steps to take for tracing each streamline.
 const float d_sep = 0.8;
+const float d_test = d_sep * 0.5;
 const float initial_x = 0;
 const float initial_y = 0;
 
@@ -122,7 +123,7 @@ Main program.
 int main(int argc, char* argv[])
 {
 	/*load mesh from ply file*/
-	FILE* this_file = fopen("../data/vector_data/v6.ply", "r");
+	FILE* this_file = fopen("../data/vector_data/v4.ply", "r");
 	poly = new Polyhedron(this_file);
 	fclose(this_file);
 	
@@ -1032,15 +1033,15 @@ void display_polyhedron(Polyhedron* poly)
 			drawPolyLine(streamlines[k], 1.0, 1.0, 0.0, 0.0);
 		}
 
-		//for (int k = 0; k < tracing_lines.size(); ++k)
-		//{
-		//	drawPolyLine(tracing_lines[k], 1.0, 1.0, 1.0, 0.0);
-		//}
+		for (int k = 0; k < tracing_lines.size(); ++k)
+		{
+			drawPolyLine(tracing_lines[k], 1.0, 1.0, 1.0, 0.0);
+		}
 
-		//for (int k = 0; k < tracing_points.size(); ++k)
-		//{
-		//	drawDot(tracing_points[k].x, tracing_points[k].y, 0, 0.15, 1, 1, 1);
-		//}
+		for (int k = 0; k < tracing_points.size(); ++k)
+		{
+			drawDot(tracing_points[k].x, tracing_points[k].y, 0, 0.15, 1, 1, 1);
+		}
 
 		glutPostRedisplay();
 	}
@@ -1324,7 +1325,7 @@ std::vector<icVector2> build_streamline(const double x, const double y)
 		while (cquad != NULL && step_counter < STEP_MAX)
 		{
 			cquad = streamline_step(cpos, npos, cquad, true);
-			if (!is_seed_point_valid(npos, d_sep * 0.5))
+			if (!is_seed_point_valid(npos, d_test))
 				break;
 			LineSegment linear_seg = LineSegment(cpos.x, cpos.y, 0, npos.x, npos.y, 0);
 			pline.push_back(linear_seg);
@@ -1348,7 +1349,7 @@ std::vector<icVector2> build_streamline(const double x, const double y)
 		while (cquad != NULL && step_counter < STEP_MAX)
 		{
 			cquad = streamline_step(cpos, npos, cquad, false);
-			if (!is_seed_point_valid(npos, d_sep * 0.5))
+			if (!is_seed_point_valid(npos, d_test))
 				break;
 			LineSegment linear_seg = LineSegment(cpos.x, cpos.y, 0, npos.x, npos.y, 0);
 			pline.push_back(linear_seg);
@@ -1522,6 +1523,11 @@ void evenly_spaced_algorithm() {
 				// then compute a new streamline and put it into the queue
 				std::vector<icVector2> temp = build_streamline(candidate_point_counterclockwise.x, candidate_point_counterclockwise.y);
 				queue.push(temp);
+
+				tracing_points.push_back(candidate_point_counterclockwise);
+				LineSegment linear_seg = LineSegment(point.x, point.y, 0, candidate_point_counterclockwise.x, candidate_point_counterclockwise.y, 0);
+				pline.push_back(linear_seg);
+				tracing_lines.push_back(pline);
 			}
 		}
 		// here we have done using the current_streamline_points, put it into the all_streamline_points
