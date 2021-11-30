@@ -41,7 +41,6 @@ int win_height = 1024;
 float aspectRatio = win_width / win_height;
 const int view_mode = 0;		// 0 = othogonal, 1=perspective
 const double radius_factor = 0.9;
-
 /*
 Use keys 1 to 0 to switch among different display modes.
 Each display mode can be designed to show one type 
@@ -76,7 +75,7 @@ const float d_sep = 0.8;
 const float d_test = d_sep * 0.5;
 const float initial_x = 0;
 const float initial_y = 0;
-
+bool traceOn = true;
 /******************************************************************************
 Forward declaration of functions
 ******************************************************************************/
@@ -123,7 +122,7 @@ Main program.
 int main(int argc, char* argv[])
 {
 	/*load mesh from ply file*/
-	FILE* this_file = fopen("../data/vector_data/v4.ply", "r");
+	FILE* this_file = fopen("../data/vector_data/v1.ply", "r");
 	poly = new Polyhedron(this_file);
 	fclose(this_file);
 	
@@ -1033,14 +1032,16 @@ void display_polyhedron(Polyhedron* poly)
 			drawPolyLine(streamlines[k], 1.0, 1.0, 0.0, 0.0);
 		}
 
-		for (int k = 0; k < tracing_lines.size(); ++k)
-		{
-			drawPolyLine(tracing_lines[k], 1.0, 1.0, 1.0, 0.0);
-		}
+		if (traceOn) {
+			for (int k = 0; k < tracing_lines.size(); ++k)
+			{
+				drawPolyLine(tracing_lines[k], 1.0, 1.0, 1.0, 0.0);
+			}
 
-		for (int k = 0; k < tracing_points.size(); ++k)
-		{
-			drawDot(tracing_points[k].x, tracing_points[k].y, 0, 0.15, 1, 1, 1);
+			for (int k = 0; k < tracing_points.size(); ++k)
+			{
+				drawDot(tracing_points[k].x, tracing_points[k].y, 0, 0.15, 1, 1, 1);
+			}
 		}
 
 		glutPostRedisplay();
@@ -1511,10 +1512,12 @@ void evenly_spaced_algorithm() {
 				queue.push(temp);
 
 				// code for user to see how the streamlines are generated
-				tracing_points.push_back(candidate_point_clockwise);
-				LineSegment linear_seg = LineSegment(point.x, point.y, 0, candidate_point_clockwise.x, candidate_point_clockwise.y, 0);
-				pline.push_back(linear_seg);
-				tracing_lines.push_back(pline);
+				if (traceOn) {
+					tracing_points.push_back(candidate_point_clockwise);
+					LineSegment linear_seg = LineSegment(point.x, point.y, 0, candidate_point_clockwise.x, candidate_point_clockwise.y, 0);
+					pline.push_back(linear_seg);
+					tracing_lines.push_back(pline);
+				}
 			}
 			
 			candidate_point_counterclockwise = select_candidate_seed_point_counterclockwise(point.x, point.y, vet.x, vet.y);
@@ -1524,10 +1527,12 @@ void evenly_spaced_algorithm() {
 				std::vector<icVector2> temp = build_streamline(candidate_point_counterclockwise.x, candidate_point_counterclockwise.y);
 				queue.push(temp);
 
-				tracing_points.push_back(candidate_point_counterclockwise);
-				LineSegment linear_seg = LineSegment(point.x, point.y, 0, candidate_point_counterclockwise.x, candidate_point_counterclockwise.y, 0);
-				pline.push_back(linear_seg);
-				tracing_lines.push_back(pline);
+				if (traceOn) {
+					tracing_points.push_back(candidate_point_counterclockwise);
+					LineSegment linear_seg = LineSegment(point.x, point.y, 0, candidate_point_counterclockwise.x, candidate_point_counterclockwise.y, 0);
+					pline.push_back(linear_seg);
+					tracing_lines.push_back(pline);
+				}
 			}
 		}
 		// here we have done using the current_streamline_points, put it into the all_streamline_points
